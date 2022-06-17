@@ -12,27 +12,55 @@ class SimpleMQPort(Structure):
     _fields_ = [("portname",POINTER(c_char)),
                 ("porttype",POINTER(c_char)),
                 ("portinfo",c_void_p)]
+
+class mqAppCtxt(Structure):
+    _fields_ = [("mqCtxt",c_void_p),
+            ("gmPort",POINTER(SimpleMQPort)),
+            ("mqConnectorCtxt",c_void_p),
+            ("metricCollectorCtxt",c_void_p)]
+
+##------------------------------------
+g_mqAppCtxt = mqAppCtxt()
+mqconnectorlibrary = ctypes.CDLL('/opt/MQConnector/libs/libMQConnector.so')
+NewMQConnector = mqconnectorlibrary.NewMQConnector
+NewMQConnector.argtypes = [c_char_p,c_void_p,c_void_p]
+NewMQConnector.restype = c_void_p
+DeleteMQConnector=mqconnectorlibrary.DeleteMQConnector
+DeleteMQConnector.argtypes=[c_void_p]
+DeleteMQConnector.restype=c_int
+mqConnectorStart = mqconnectorlibrary.mqConnectorStart
+mqConnectorStart.argtypes = [c_void_p]
+mqConnectorStart.restype = c_int
+
+#---------------------------------------
+
+
+
 name = create_string_buffer(b"testnode1")
 test_data = create_string_buffer(b"receive_test")
 mq_type=create_string_buffer(b"zmq")
-
-
-
 port_info = create_string_buffer(b"{\"port\": \"input\", \"type\": \"consumer\", \"zmq\": {\"addresses\": [\"tcp://127.0.0.1:5003\"], \"connection\": \"connect\", \"socketType\" : \"SUB\"}}")
+
 config = SimpleMQConfig(name)
 mqcontext=ctypes.c_void_p()
 simplemqlibrary = ctypes.cdll.LoadLibrary('/opt/SimpleMQ/libs/libSimpleMQ.so')
 NewSimpleMQData = simplemqlibrary.NewSimpleMQData
 NewSimpleMQData.restype = POINTER(SimpleMQData)
 mqData = NewSimpleMQData(2,test_data,13,test_data,13)
+
+
 #int  simpleMQPortConnect(void *mqCtxt, SimpleMQPort *mqPort)
 simpleMQPortConnect = simplemqlibrary.simpleMQPortConnect
 simpleMQPortConnect.argtypes = [c_void_p,POINTER(SimpleMQPort)]
 simpleMQPortConnect.restype = c_int
+
+
 # void *NewSimpleMQ(const char *mqType, void *mqConfig);
 NewSimpleMQ = simplemqlibrary.NewSimpleMQ
 NewSimpleMQ.argtypes = [c_char_p,c_void_p]
 NewSimpleMQ.restype = c_void_p
+
+
 #int simpleMQRecv(void *mqCtxt, char* port, SimpleMQData **data);
 simpleMQRecv = simplemqlibrary.simpleMQRecv
 simpleMQRecv.argtypes=[c_void_p,c_char_p,POINTER(POINTER(SimpleMQData))]
@@ -65,54 +93,20 @@ print(result_portconnect)
 print('\n')
 
 #port_info = create_string_buffer(b"input")
-import gc
-
-
-port_info = create_string_buffer(b"input")
-
 
 while True:
+    #mqData = NewSimpleMQData(2,test_data,13,test_data,13)
     #mqcontext = NewSimpleMQ(mq_type,ctypes.byref(config))
     #result_portconnect = simpleMQPortConnect(mqcontext,mqPortPointer)
+    port_info = create_string_buffer(b"input")
 
-    mqData = NewSimpleMQData(2,test_data,13,test_data,13)
-    #mqData = NewSimpleMQData(1,test_data,13)
-
-    a = ctypes.cast(b"input", ctypes.c_char_p)
-    #res = ctypes.c_char_p(a.value)
-    res = bytes(memoryview(a.value))
-
-
-
-    result2 = simpleMQRecv(mqcontext,res,ctypes.byref(mqData))
-    print("MQContext")
-    print(mqcontext)
-    print("PortInfo")
-    print(port_info)
-    #result2 = simpleMQRecv(mqcontext,port_info,ctypes.byref(mqData))
+    mqData = NewSimpleMQData(1,test_data,13)
+    #result2 = simpleMQRecv(mqcontext,create_string_buffer(b"input"),ctypes.byref(mqData))
+    result2 = simpleMQRecv(mqcontext,port_info,ctypes.byref(mqData))
     print('Recv status is ')
-    #print(result2)
-    #del result2
+    print(result2)
     print('\n')
-
     
     DeleteSimpleMQData(mqData)
-    del res
-    del result2
-    print(gc.collect())
-
-    print("-----------")
-    print(ctypes._reset_cache())
-
-
-
-    print("Collect")
-    print(gc.DEBUG_LEAK)
-
-
-
-    print("Debug ")
-    print(gc.DEBUG_UNCOLLECTABLE)
-
-    print("-----------")
     #DeleteSimpleMQ(mqcontext)
+    del port_info

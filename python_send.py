@@ -61,8 +61,8 @@ print('\n')
 while(1):
     #NewSimpleMQData = simplemqlibrary.NewSimpleMQData
     #NewSimpleMQData.restype = POINTER(SimpleMQData)
-    #mqData = NewSimpleMQData(2,test_data,13,test_data,13)
-    mqData = NewSimpleMQData(1,test_data,13)
+    mqData = NewSimpleMQData(2,test_data,13,test_data,13)
+    #mqData = NewSimpleMQData(1,test_data,13)
 
     result2=simpleMQSend(mqcontext,create_string_buffer(b"output"),mqData)
     

@@ -1,1 +1,8 @@
 sudo docker run --entrypoint bash  --network host   -v /home/prince_uncannyvision_com/SimpleMQ_Testing:/app -it uvdeployment/shield:trt_classifier_amd64_22_06_02_nomyModule
+
+valgrind  --leak-check=full \
+--show-leak-kinds=all \
+--track-origins=yes \
+--verbose \
+--log-file=valgrind-out.txt \
+python3 python_receive.py
