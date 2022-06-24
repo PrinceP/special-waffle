@@ -22,7 +22,12 @@ class mqAppCtxt(Structure):
 
 
 name = create_string_buffer(b"testnode1")
-test_data = create_string_buffer(b"receive_test")
+
+test_data = "receive_test"
+test_data = test_data.encode('utf-8')
+#test_data = create_string_buffer(b"receive_test")
+
+
 #mq_type=create_string_buffer(b"zmq")
 mq_type = "zmq"
 mq_type = mq_type.encode('utf-8')
@@ -37,7 +42,8 @@ mqcontext=ctypes.c_void_p()
 simplemqlibrary = ctypes.cdll.LoadLibrary('/opt/SimpleMQ/libs/libSimpleMQ.so')
 NewSimpleMQData = simplemqlibrary.NewSimpleMQData
 NewSimpleMQData.restype = POINTER(SimpleMQData)
-mqData = NewSimpleMQData(2,test_data,13,test_data,13)
+mqData = NewSimpleMQData(2,bytes(memoryview(test_data)),13,bytes(memoryview(test_data)),13)
+#mqData = NewSimpleMQData(2,test_data,13,test_data,13)
 
 
 #int  simpleMQPortConnect(void *mqCtxt, SimpleMQPort *mqPort)
@@ -85,10 +91,12 @@ print('\nPort connect Status is')
 print(result_portconnect)
 print('\n')
 
+import gc
 #port_info = create_string_buffer(b"input")
 
 while True:
-    mqData = NewSimpleMQData(2,test_data,13,test_data,13)
+    mqData = NewSimpleMQData(2,bytes(memoryview(test_data)),13,bytes(memoryview(test_data)),13)
+    #mqData = NewSimpleMQData(2,test_data,13,test_data,13)
     #mqcontext = NewSimpleMQ(mq_type,ctypes.byref(config))
     #result_portconnect = simpleMQPortConnect(mqcontext,mqPortPointer)
     port_info = "input"
@@ -102,5 +110,6 @@ while True:
     print('\n')
     
     DeleteSimpleMQData(mqData)
+    #gc.collect()
     #DeleteSimpleMQ(mqcontext)
     del port_info
