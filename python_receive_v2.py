@@ -21,7 +21,9 @@ class mqAppCtxt(Structure):
 
 
 
-name = create_string_buffer(b"testnode1")
+name = "testnode1"
+name = name.encode('utf-8')
+#name = create_string_buffer(b"testnode1")
 
 test_data = "receive_test"
 test_data = test_data.encode('utf-8')
@@ -37,7 +39,9 @@ port_info = "{\"port\": \"input\", \"type\": \"consumer\", \"zmq\": {\"addresses
 port_info = port_info.encode('utf-8')
 
 
+name = ctypes.cast(name, ctypes.POINTER(ctypes.c_char))
 config = SimpleMQConfig(name)
+
 mqcontext=ctypes.c_void_p()
 simplemqlibrary = ctypes.cdll.LoadLibrary('/opt/SimpleMQ/libs/libSimpleMQ.so')
 NewSimpleMQData = simplemqlibrary.NewSimpleMQData
