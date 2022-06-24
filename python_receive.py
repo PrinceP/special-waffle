@@ -66,9 +66,10 @@ print('\n')
 
 #port_info = create_string_buffer(b"input")
 import gc
-
-
-port_info = create_string_buffer(b"input")
+print("xxxx")
+gc.DEBUG_SAVEALL = 1
+gc.DEBUG_UNCOLLECTABLE = 1
+import json
 
 
 while True:
@@ -78,41 +79,35 @@ while True:
     mqData = NewSimpleMQData(2,test_data,13,test_data,13)
     #mqData = NewSimpleMQData(1,test_data,13)
 
-    a = ctypes.cast(b"input", ctypes.c_char_p)
-    #res = ctypes.c_char_p(a.value)
-    res = bytes(memoryview(a.value))
-
-
-
-    result2 = simpleMQRecv(mqcontext,res,ctypes.byref(mqData))
-    print("MQContext")
-    print(mqcontext)
-    print("PortInfo")
-    print(port_info)
-    #result2 = simpleMQRecv(mqcontext,port_info,ctypes.byref(mqData))
+    #result2 = simpleMQRecv(mqcontext,res,ctypes.byref(mqData))
+    result2 = simpleMQRecv(mqcontext,create_string_buffer(b"input"),ctypes.byref(mqData))
     print('Recv status is ')
-    #print(result2)
-    #del result2
+    jsondata = mqData[0].data[0]
+    json_length = mqData[0].length[0]
+    json_string = jsondata[:json_length]
+    print(json_string)
+    #print(mqData[0].data)
+    #print(mqData[1].data)
+    print(result2)
     print('\n')
-
     
     DeleteSimpleMQData(mqData)
-    del res
-    del result2
-    print(gc.collect())
-
+        
+    #DeleteSimpleMQ(mqcontext)
+    #print(gc.get_stats())
+    #print(gc.collect())
+    '''
     print("-----------")
     print(ctypes._reset_cache())
-
-
 
     print("Collect")
     print(gc.DEBUG_LEAK)
 
-
-
     print("Debug ")
     print(gc.DEBUG_UNCOLLECTABLE)
 
+    print(gc.garbage)
     print("-----------")
-    #DeleteSimpleMQ(mqcontext)
+    '''  
+  
+    

@@ -69,5 +69,10 @@ while(1):
     print('Send status is ')
     print(result2)
     print('\n')
+    jsondata = mqData[0].data[0]
+    json_length = mqData[0].length[0]
+    json_string = jsondata[:json_length]
+    print(json_string)
+
     DeleteSimpleMQData(mqData)
 
