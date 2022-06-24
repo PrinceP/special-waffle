@@ -19,27 +19,18 @@ class mqAppCtxt(Structure):
             ("mqConnectorCtxt",c_void_p),
             ("metricCollectorCtxt",c_void_p)]
 
-##------------------------------------
-g_mqAppCtxt = mqAppCtxt()
-mqconnectorlibrary = ctypes.CDLL('/opt/MQConnector/libs/libMQConnector.so')
-NewMQConnector = mqconnectorlibrary.NewMQConnector
-NewMQConnector.argtypes = [c_char_p,c_void_p,c_void_p]
-NewMQConnector.restype = c_void_p
-DeleteMQConnector=mqconnectorlibrary.DeleteMQConnector
-DeleteMQConnector.argtypes=[c_void_p]
-DeleteMQConnector.restype=c_int
-mqConnectorStart = mqconnectorlibrary.mqConnectorStart
-mqConnectorStart.argtypes = [c_void_p]
-mqConnectorStart.restype = c_int
-
-#---------------------------------------
-
 
 
 name = create_string_buffer(b"testnode1")
 test_data = create_string_buffer(b"receive_test")
-mq_type=create_string_buffer(b"zmq")
-port_info = create_string_buffer(b"{\"port\": \"input\", \"type\": \"consumer\", \"zmq\": {\"addresses\": [\"tcp://127.0.0.1:5003\"], \"connection\": \"connect\", \"socketType\" : \"SUB\"}}")
+#mq_type=create_string_buffer(b"zmq")
+mq_type = "zmq"
+mq_type = mq_type.encode('utf-8')
+
+#port_info = create_string_buffer(b"{\"port\": \"input\", \"type\": \"consumer\", \"zmq\": {\"addresses\": [\"tcp://127.0.0.1:5003\"], \"connection\": \"connect\", \"socketType\" : \"SUB\"}}")
+port_info = "{\"port\": \"input\", \"type\": \"consumer\", \"zmq\": {\"addresses\": [\"tcp://127.0.0.1:5003\"], \"connection\": \"connect\", \"socketType\" : \"SUB\"}}"
+port_info = port_info.encode('utf-8')
+
 
 config = SimpleMQConfig(name)
 mqcontext=ctypes.c_void_p()
@@ -84,7 +75,9 @@ NewZMQPort.restype=POINTER(SimpleMQPort)
 mqPortPointer = NewZMQPort(port_info)
 print(mqPortPointer)
 
-mqcontext = NewSimpleMQ(mq_type,ctypes.byref(config))
+#mqcontext = NewSimpleMQ(mq_type,ctypes.byref(config))
+mqcontext = NewSimpleMQ(bytes(memoryview(mq_type)),ctypes.byref(config))
+#mqcontext = NewSimpleMQ(c_char_p(mq_type),ctypes.byref(config))
 result_portconnect = simpleMQPortConnect(mqcontext,mqPortPointer)
 
 
@@ -95,14 +88,15 @@ print('\n')
 #port_info = create_string_buffer(b"input")
 
 while True:
-    #mqData = NewSimpleMQData(2,test_data,13,test_data,13)
+    mqData = NewSimpleMQData(2,test_data,13,test_data,13)
     #mqcontext = NewSimpleMQ(mq_type,ctypes.byref(config))
     #result_portconnect = simpleMQPortConnect(mqcontext,mqPortPointer)
-    port_info = create_string_buffer(b"input")
+    port_info = "input"
+    port_info = port_info.encode('utf-8')
 
-    mqData = NewSimpleMQData(1,test_data,13)
-    #result2 = simpleMQRecv(mqcontext,create_string_buffer(b"input"),ctypes.byref(mqData))
-    result2 = simpleMQRecv(mqcontext,port_info,ctypes.byref(mqData))
+    #mqData = NewSimpleMQData(1,test_data,13)
+    result2 = simpleMQRecv(mqcontext,bytes(memoryview(port_info)),ctypes.byref(mqData))
+    #result2 = simpleMQRecv(mqcontext,c_char_p(port_info),ctypes.byref(mqData))
     print('Recv status is ')
     print(result2)
     print('\n')
